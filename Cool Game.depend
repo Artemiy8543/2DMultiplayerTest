@@ -1,5 +1,5 @@
 # depslib dependency file v1.0
-1718120673 source:c:\users\admin\documents\cool game\main.cpp
+1718186344 source:c:\users\admin\documents\cool game\main.cpp
 	<SFML/Audio.hpp>
 	<SFML/Graphics.hpp>
 	<SFML/Main.hpp>
@@ -8,18 +8,6 @@
 	<SFML/System.hpp>
 	<SFML/Window.hpp>
 	<bits/stdc++.h>
-	<SFML/Audio.hpp>
-	<SFML/Graphics.hpp>
-	<SFML/Main.hpp>
-	<SFML/Network.hpp>
-	<SFML/OpenGL.hpp>
-	<SFML/System.hpp>
-	<SFML/Window.hpp>
-	<bits/stdc++.h>
-	<bits/stdc++.h>
-	<SFML/Graphics.hpp>
-	<SFML/Window/Mouse.hpp>
-	<SFML/Network/TcpSocket.hpp>
 
 1525812018 c:\sfml-2.5.1\include\sfml\graphics.hpp
 	<SFML/Window.hpp>
