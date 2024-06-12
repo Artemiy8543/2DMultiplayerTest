@@ -1,92 +1,3 @@
-/*
-#include <SFML/Audio.hpp>
-#include <SFML/Graphics.hpp>
-#include <SFML/Main.hpp>
-#include <SFML/Network.hpp>
-#include <SFML/OpenGL.hpp>
-#include <SFML/System.hpp>
-#include <SFML/Window.hpp>
-#include <bits/stdc++.h>
-#define ll long long
-using namespace std;
-using namespace sf;
-string address;
-int port, porto;
-string conv(double x)
-{
-  ostringstream ss;
-  ss << x;
-  return ss.str();
-}
-int main()
-{
-    double speed;
-    TcpSocket socket;
-    TcpListener listener;
-    cout << "Speed:";
-    cin >> speed;
-    cout << "Port:";
-    cin >> porto;
-    if (listener.listen(porto) != Socket::Done){
-        cout << "Error to open port!\n";
-    }
-    cout << "IPAdress:";
-    cin >> address;
-    cout << "Port:";
-    cin >> port;
-    cout << "try connect to " << address << ":" << port << "\n";
-    Socket::Status status = socket.connect(address, port);
-    if(status!=Socket::Done){
-        cout << "Connection error!\n";
-    }
-    ContextSettings settings;
-    settings.sRgbCapable = true;
-    RenderWindow window(VideoMode(), "Draw", Style::Default, settings);
-    double x=150.0,y=150.0,xa=150.0,ya=150.0;
-    CircleShape player(20);
-    CircleShape player2(20);
-    player.setFillColor(Color::Green);
-    player2.setFillColor(Color::Red);
-    TcpSocket client;
-    if (listener.accept(client) != Socket::Done){
-        cout << "Error get client!\n";
-    }
-    while (window.isOpen())
-    {
-        Event event;
-        while (window.pollEvent(event))if (event.type == Event::Closed)window.close();
-        window.clear(Color::Black);
-        if(Keyboard::isKeyPressed(Keyboard::W))y-=speed;
-        if(Keyboard::isKeyPressed(Keyboard::S))y+=speed;
-        if(Keyboard::isKeyPressed(Keyboard::A))x-=speed;
-        if(Keyboard::isKeyPressed(Keyboard::D))x+=speed;
-        string xstr = conv(x),ystr = conv(y),datastr;
-        while(xstr.size()<5)xstr = "0" + xstr;
-        while(ystr.size()<5)ystr = "0" + ystr;
-        datastr = xstr + '|' + ystr;
-        char datas[11];
-        strcpy(datas, datastr.c_str());
-        socket.send(datas, 11);
-        char datar[11];
-        size_t received;
-        if (client.receive(datar, 11, received) == sf::Socket::Done){
-            string str(datar);
-            string xstr = str.substr(0,str.find("|")), ystr = str.substr(str.find("|")+1, 11);
-            xa = stod(xstr);
-            ya = stod(ystr);
-        }else{
-            cout << "Receiving error!\n";
-        }
-        player.setPosition(Vector2f(x-20,y-20));
-        player2.setPosition(Vector2f(xa-20,ya-20));
-        window.draw(player);
-        window.draw(player2);
-        window.display();
-    }
-    return 0;
-}
-*/
-
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include <SFML/Main.hpp>
@@ -338,14 +249,10 @@ int main()
                 char datas[11];
                 strcpy(datas, datastr.c_str());
                 socket.send(datas, 11);
-                cout << "Datas:" << datastr << endl;
-                out << "Datas:" << datastr << endl;
                 char datar[55];
                 size_t received;
                 if (socket.receive(datar, 55, received) == sf::Socket::Done){
                     string str(datar);
-                    cout << "Datar:" << str << endl;
-                    out << "Datar:" << str << "\n";
                     while(str[0]!='|'){
                         string playerinfo = str.substr(0,11);
                         string playercolor = playerinfo.substr(0,1),playerx = playerinfo.substr(1,5),playery=playerinfo.substr(6,5);
@@ -375,69 +282,3 @@ int main()
     is_end=true;
     return 0;
 }
-
-//PerlinNoise
-/*
-#include <bits/stdc++.h>
-#include <SFML/Graphics.hpp>
-#include <SFML/Window/Mouse.hpp>
-#include <SFML/Network/TcpSocket.hpp>
-using namespace std;
-using namespace sf;
-#define ll long long
-long long SmallGen(ll x, ll y, ll seed){
-    double res;
-    res = (x*seed*seed)^y*seed;
-    return round(res);
-}
-double PerlinNoise(ll x, ll y, ll seed){
-    double res, n, genp;
-    ll gen;
-    gen = SmallGen(x, y, seed);
-    if(x==0)x=1;
-    if(y==0)y=1;
-    n=gen^(x*(-1*y));
-    n /= (x+y*y);
-    if(n==1.0/0.0)return PerlinNoise(abs(x),-y,gen);
-    while(n*10<1.0)n=abs(n*10)+1;
-    while(n>1.0)n=abs(n/10)-abs(n);
-    //cout << "n=" << n << "\tx=" << x << "\ty=" << y << endl;
-    return n;
-}
-ll x_wind=300, y_wind=300, seed=52;
-int main()
-{
-    RenderWindow window(VideoMode(x_wind, y_wind), "Perlin test");
-    window.clear();
-    ll x=0, y=0, step=6;
-    double maxi=0,maxi_col=0;
-    while (window.isOpen())
-    {
-        Event event;
-        while (window.pollEvent(event))
-        {
-            if (event.type == Event::Closed)
-                window.close();
-        }
-        double col = PerlinNoise(x, y, seed);
-        maxi+=col;
-        maxi_col+=1;
-        col *= 255.0;
-        CircleShape shape(step);
-        shape.setFillColor(Color(col,col,col));
-        shape.setPosition(Vector2f(x, y));
-        if(x<x_wind){
-            x+=step;
-        }else if(y<y_wind){
-            y+=step;
-            x=0;
-        }
-        if(y<y_wind){
-            window.draw(shape);
-            window.display();
-        }
-    }
-    cout<<"====\n"<<maxi/maxi_col;
-    return 0;
-}
-*/
