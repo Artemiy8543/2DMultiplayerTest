@@ -12,9 +12,9 @@ using namespace sf;
 string address;
 ll rc;
 int port, ports;
-bool is_pause=true,is_server=true,is_end=false,is_yes=false;
+bool is_pause=true,is_server=true,is_end=false,is_yes=false,is_running=false,is_sliding=false,is_crounching=false;
 SocketSelector selector;
-double x=150.1,y=150.1,fps=120,frames=1,speed=1;
+double x=150.1,y=150.1,mx=1.0,my=1.0,emx,emy,fps=120,frames=1,speed=1;
 vector<TcpSocket*> users;
 auto e = std::chrono::system_clock::now();
 time_t end_time = chrono::system_clock::to_time_t(e);
@@ -23,9 +23,12 @@ string path = "logs/" + name.substr(4,7) + name.substr(11,2) + "." + name.substr
 ofstream out(path);
 Clock second;
 Color sprites[10]={Color(237,209,156),Color(102,0,102),Color(199,252,236),Color(255,133,151),Color(245,171,0),Color(182,110,121),Color(104,108,94),Color(92,53,48),Color(255,43,43),Color(148,255,255)};
-CircleShape player(20);
 Font font;
 Text fpst;
+CircleShape leye(5,720),reye(5,720),player(20,5000),lleye(2),rreye(2);
+double deg_to_rad(double input){
+    return input*3.14/180;
+}
 string conv(double x){
   ostringstream ss;
   ss << x;
@@ -72,7 +75,7 @@ void ServerMain(){
 void ServerReceiver(RenderWindow* window){
     font.loadFromFile("utils/Intro.otf");
     window->setActive(true);
-    double xtoconv,ytoconv;
+    double xtoconv,ytoconv,dist,cs,sn;
     int xd,yd,xp,yp;
     string xstr,ystr,klooo;
 	while (window->isOpen()){
@@ -80,9 +83,20 @@ void ServerReceiver(RenderWindow* window){
         klooo="FPS:"+conv(round(fps*10.0)/10.0)+"\tX:"+conv(round(x*10.0)/10.0)+" Y:"+conv(round(y*10.0)/10.0)+"\nspeed:"+conv(speed);
         fpst.setString(klooo);
         window->draw(fpst);
-        player.setPosition(x,y);
+        player.setPosition(x-20,y-20);
         player.setFillColor(sprites[rc]);
         window->draw(player);
+        dist = sqrt(pow(emx-x,2)+pow(emy-y,2));
+        cs=(emx-x)/dist;
+        sn=(emy-y)/dist;
+        leye.setPosition((x+cs*15-x)*cos(deg_to_rad(30))-(y+sn*15-y)*sin(deg_to_rad(30))+x-5,(x+cs*15-x)*sin(deg_to_rad(30))+(y+sn*15-y)*cos(deg_to_rad(30))+y-5);
+        reye.setPosition((x+cs*15-x)*cos(deg_to_rad(330))-(y+sn*15-y)*sin(deg_to_rad(330))+x-5,(x+cs*15-x)*sin(deg_to_rad(330))+(y+sn*15-y)*cos(deg_to_rad(330))+y-5);
+        lleye.setPosition((x+cs*18-x)*cos(deg_to_rad(20))-(y+sn*18-y)*sin(deg_to_rad(20))+x-2,(x+cs*18-x)*sin(deg_to_rad(20))+(y+sn*18-y)*cos(deg_to_rad(20))+y-2);
+        rreye.setPosition((x+cs*18-x)*cos(deg_to_rad(340))-(y+sn*18-y)*sin(deg_to_rad(340))+x-2,(x+cs*18-x)*sin(deg_to_rad(340))+(y+sn*18-y)*cos(deg_to_rad(340))+y-2);
+        window->draw(leye);
+        window->draw(reye);
+        window->draw(lleye);
+        window->draw(rreye);
 	    char datas[45];
 	    xtoconv = round(x*10.0)/10.0,ytoconv = round(y*10.0)/10.0;
 	    xd=floor(xtoconv),yd=floor(ytoconv),xp=(xtoconv-xd)*10.0,yp=(ytoconv-yd)*10.0;
@@ -100,7 +114,7 @@ void ServerReceiver(RenderWindow* window){
                     datastr = datastr + str.substr(0,9);
                     int pcolor=stoi(str.substr(0,1)),pxd=stoi(str.substr(1,3)),pxp=stoi(str.substr(4,1)),pyd=stoi(str.substr(5,3)),pyp=stoi(str.substr(8,1));
                     double px=pxd+(pxp/10.0),py=pyd+(pyp/10.0);
-                    player.setPosition(px,py);
+                    player.setPosition(px-20,py-20);
                     player.setFillColor(sprites[pcolor]);
                     window->draw(player);
                 }
@@ -127,7 +141,7 @@ void ClientMain(RenderWindow* window){
     }
     font.loadFromFile("utils/Intro.otf");
     window->setActive(true);
-    double xtoconv,ytoconv;
+    double xtoconv,ytoconv,dist,cs,sn;
     int xd,yd,xp,yp;
     string xstr,ystr,klooo;
 	while(window->isOpen()){
@@ -136,6 +150,15 @@ void ClientMain(RenderWindow* window){
         klooo="FPS:"+conv(round(fps*10.0)/10.0)+"\tX:"+conv(round(x*10.0)/10.0)+" Y:"+conv(round(y*10.0)/10.0)+"\nspeed:"+conv(speed);
         fpst.setString(klooo);
         window->draw(fpst);
+        dist = sqrt(pow(emx-x,2)+pow(emy-y,2));
+        cs=(emx-x)/dist;
+        sn=(emy-y)/dist;
+        leye.setPosition((x+cs*15-x)*cos(deg_to_rad(30))-(y+sn*15-y)*sin(deg_to_rad(30))+x-5,(x+cs*15-x)*sin(deg_to_rad(30))+(y+sn*15-y)*cos(deg_to_rad(30))+y-5);
+        reye.setPosition((x+cs*15-x)*cos(deg_to_rad(330))-(y+sn*15-y)*sin(deg_to_rad(330))+x-5,(x+cs*15-x)*sin(deg_to_rad(330))+(y+sn*15-y)*cos(deg_to_rad(330))+y-5);
+        lleye.setPosition((x+cs*18-x)*cos(deg_to_rad(20))-(y+sn*18-y)*sin(deg_to_rad(20))+x-2,(x+cs*18-x)*sin(deg_to_rad(20))+(y+sn*18-y)*cos(deg_to_rad(20))+y-2);
+        rreye.setPosition((x+cs*18-x)*cos(deg_to_rad(340))-(y+sn*18-y)*sin(deg_to_rad(340))+x-2,(x+cs*18-x)*sin(deg_to_rad(340))+(y+sn*18-y)*cos(deg_to_rad(340))+y-2);
+        player.setPosition(x-20,y-20);
+        player.setFillColor(sprites[rc]);
 
         xtoconv = round(x*10.0)/10.0,ytoconv = round(y*10.0)/10.0;
         xd=floor(xtoconv),yd=floor(ytoconv),xp=(xtoconv-xd)*10.0,yp=(ytoconv-yd)*10.0;
@@ -153,18 +176,23 @@ void ClientMain(RenderWindow* window){
                 int pcolor=stoi(str.substr(0,1)),pxd=stoi(str.substr(1,3)),pxp=stoi(str.substr(4,1)),pyd=stoi(str.substr(5,3)),pyp=stoi(str.substr(8,1));
                 double px=pxd+(pxp/10.0),py=pyd+(pyp/10.0);
                 str.erase(0,9);
-                player.setPosition(px,py);
+                player.setPosition(px-20,py-20);
                 player.setFillColor(sprites[pcolor]);
                 window->draw(player);
             }
 
         }else{
             cout << "else\n";
-            player.setPosition(x,y);
+            player.setPosition(x-20,y-20);
             player.setFillColor(sprites[rc]);
             window->draw(player);
             cout << "Receiving error!\n";
         }
+        window->draw(player);
+        window->draw(leye);
+        window->draw(reye);
+        window->draw(lleye);
+        window->draw(rreye);
         window->display();
 	}
 }
@@ -183,6 +211,15 @@ int main()
     ll width = desktop.bottom;
 
     RenderWindow window(VideoMode(300,300,1), "Draw", Style::Default, ContextSettings(0,0,0,1,1,0,true));
+    leye.setFillColor(Color::White);
+    reye.setFillColor(Color::White);
+    leye.setOutlineThickness(1);
+    reye.setOutlineThickness(1);
+    leye.setOutlineColor(Color::Black);
+    reye.setOutlineColor(Color::Black);
+    lleye.setFillColor(Color::Black);
+    rreye.setFillColor(Color::Black);
+
     fpst.setFont(font);
     fpst.setCharacterSize(10);
     fpst.setColor(Color::White);
@@ -240,12 +277,52 @@ int main()
                     CMain.detach();
             }
         }else{
-            speed = 1/max((fps/60.0),1.0);
-            if(Keyboard::isKeyPressed(Keyboard::LShift))speed*=2;
-            if(Keyboard::isKeyPressed(Keyboard::W))y-=speed;
-            if(Keyboard::isKeyPressed(Keyboard::S))y+=speed;
-            if(Keyboard::isKeyPressed(Keyboard::A))x-=speed;
-            if(Keyboard::isKeyPressed(Keyboard::D))x+=speed;
+            if(Keyboard::isKeyPressed(Keyboard::LControl)){
+                if(!is_running and !is_sliding)is_crounching=true;
+                is_running=false;
+            }else{
+                is_crounching=false;
+            }
+            if(!is_sliding){
+                mx = Mouse::getPosition(window).x;my = Mouse::getPosition(window).y;
+                if(is_running)speed = 3/max((fps/60.0),1.0);
+                else if(is_crounching)speed = 0.75/max((fps/60.0),1.0);
+                else speed = 1.5/max((fps/60.0),1.0);
+            }else{
+                speed-=0.0001/max((fps/60.0),1.0);
+                if(speed<0.75/max((fps/60.0),1.0))is_sliding=false;
+                double dist = sqrt(pow(mx-x,2)+pow(my-y,2)),cs,sn;
+                cs=(mx-x)/dist;sn=(my-y)/dist;
+                x+=cs*speed;
+                y+=sn*speed;
+            }
+
+            emx = Mouse::getPosition(window).x;emy = Mouse::getPosition(window).y;
+            double dist = sqrt(pow(Mouse::getPosition(window).x-x,2)+pow(Mouse::getPosition(window).y-y,2)),cs,sn;
+            cs=(Mouse::getPosition(window).x-x)/dist;sn=(Mouse::getPosition(window).y-y)/dist;
+
+
+            if(Keyboard::isKeyPressed(Keyboard::W)){
+                if(Keyboard::isKeyPressed(Keyboard::LShift))is_running=true;
+                x+=cs*speed;
+                y+=sn*speed;
+                if(Keyboard::isKeyPressed(Keyboard::LControl) and is_running)is_sliding=true;
+            }else{
+                is_sliding=false;
+                is_running=false;
+            }
+            if(Keyboard::isKeyPressed(Keyboard::S)){
+                x-=cs*speed;
+                y-=sn*speed;
+            }
+            if(Keyboard::isKeyPressed(Keyboard::A)){
+                x-=(x+cs*speed-x)*cos(deg_to_rad(90))-(y+sn*speed-y)*sin(deg_to_rad(90));
+                y-=(x+cs*speed-x)*sin(deg_to_rad(90))+(y+sn*speed-y)*cos(deg_to_rad(90));
+            }
+            if(Keyboard::isKeyPressed(Keyboard::D)){
+                x+=(x+cs*speed-x)*cos(deg_to_rad(90))-(y+sn*speed-y)*sin(deg_to_rad(90));
+                y+=(x+cs*speed-x)*sin(deg_to_rad(90))+(y+sn*speed-y)*cos(deg_to_rad(90));
+            }
             if(second.getElapsedTime().asSeconds()>=1){
                 fps=frames;
                 frames=0;
